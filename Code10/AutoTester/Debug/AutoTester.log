@@ -1,0 +1,7 @@
+﻿  TestWrapper.cpp
+C:\University\CS3203\WIN_StartupSPASolution\WIN_StartupSPASolution\Team10\Code10\AutoTester\source\TestWrapper.cpp(10,39): warning C4356:  'AbstractWrapper::GlobalStop': static data member cannot be initialized via derived class
+AutoTester_debug.lib(AutoTester.obj) : warning LNK4099: PDB 'autotester.pdb' was not found with 'AutoTester_debug.lib(AutoTester.obj)' or at 'C:\University\CS3203\WIN_StartupSPASolution\WIN_StartupSPASolution\Team10\Code10\Debug\autotester.pdb'; linking object as if no debug info
+AutoTester_debug.lib(Query.obj) : warning LNK4099: PDB 'autotester.pdb' was not found with 'AutoTester_debug.lib(Query.obj)' or at 'C:\University\CS3203\WIN_StartupSPASolution\WIN_StartupSPASolution\Team10\Code10\Debug\autotester.pdb'; linking object as if no debug info
+AutoTester_debug.lib(QueryManager.obj) : warning LNK4099: PDB 'autotester.pdb' was not found with 'AutoTester_debug.lib(QueryManager.obj)' or at 'C:\University\CS3203\WIN_StartupSPASolution\WIN_StartupSPASolution\Team10\Code10\Debug\autotester.pdb'; linking object as if no debug info
+AutoTester_debug.lib(Tokenizer.obj) : warning LNK4099: PDB 'autotester.pdb' was not found with 'AutoTester_debug.lib(Tokenizer.obj)' or at 'C:\University\CS3203\WIN_StartupSPASolution\WIN_StartupSPASolution\Team10\Code10\Debug\autotester.pdb'; linking object as if no debug info
+  AutoTester.vcxproj -> C:\University\CS3203\WIN_StartupSPASolution\WIN_StartupSPASolution\Team10\Code10\Debug\AutoTester.exe
