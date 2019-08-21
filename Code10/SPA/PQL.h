@@ -2,11 +2,12 @@
 #include <iostream>
 #include <string>
 
+using namespace std;
+
 class PQL
 {
 public:
-
-private:
+	PQL(string query);
 
 };
 
