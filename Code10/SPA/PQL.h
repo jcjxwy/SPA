@@ -8,6 +8,10 @@ class PQL
 {
 public:
 	PQL(string query);
-
+private:
+	string declaration;
+	string body;
+	void parseDeclaration(string declaration);
+	void parseBody(string body);
 };
 
