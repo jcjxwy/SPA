@@ -13,13 +13,14 @@ class PQL
 		PQL(string query);
 		string getDeclaration();
 		string getBody();
+		string getResult();
 	private:
 		string declaration;
 		string body;
+		string queryResult;
 		void parseDeclaration();
 		void replace_body(string replacement);
 		void parseBody();
 };
 
 #endif
-
