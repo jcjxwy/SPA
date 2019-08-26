@@ -7,8 +7,7 @@
 
 using namespace std;
 
-// unable to inclue PKB.h
-//#include "PKB.h"
+#include "PKB.h"
 #include <unordered_map> 
 
 PQL::PQL(string query) {
@@ -23,7 +22,6 @@ PQL::PQL(string query) {
 	smatch match2;
 	regex_search(query, match2, r2);
 	body = match2.str(0);
-
 	parseDeclaration();
 	parseBody();
 }
@@ -82,18 +80,17 @@ void PQL::parseBody() {
 				iss >> word_select;
 				iss >> arugment;
 
-				// unable to inclue PKB.h
-				/*
+				
 				if (arugment.compare("variable")) {
-					unordered_map <std::string, int > VarTable = PKB.getVariables();
+					unordered_map <std::string, int > VarTable = PKB().getVariables();
 					queryResult = "";
 					for (auto const& element : VarTable)
 					{
-						queryResult = queryResult + VarTable.first + ", ";
-
+						queryResult = queryResult + element.first + ", ";
+						//queryResult = "from varTable";
 					}
 				}
-				*/
+				
 			}
 			else {
 				regex selectEmpty("\\s(such that\\s(Follow|Parent|Uses|Modifies|Follow\W|Parent\W)|pattern\\sassign)");

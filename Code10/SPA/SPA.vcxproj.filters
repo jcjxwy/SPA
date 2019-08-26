@@ -24,10 +24,10 @@
     <ClCompile Include="..\source\PKB.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\source\TNode.cpp">
+	<ClCompile Include="..\source\PQL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PQL.cpp">
+    <ClCompile Include="..\source\TNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,11 +35,12 @@
     <ClInclude Include="..\source\PKB.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+	<ClInclude Include="..\source\PQL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\source\TNode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PQL.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+
   </ItemGroup>
 </Project>
