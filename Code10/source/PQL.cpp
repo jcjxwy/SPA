@@ -22,9 +22,10 @@ PQL::PQL(string query) {
 	smatch match2;
 	regex_search(query, match2, r2);
 	body = match2.str(0);
-
+	cout << "<<<<<" << endl;
 	parseDeclaration();
 	parseBody();
+	cout << queryResult << " <<<<<<<hi" << endl;
 }
 
 string PQL::getDeclaration() {
@@ -87,8 +88,8 @@ void PQL::parseBody() {
 					queryResult = "";
 					for (auto const& element : VarTable)
 					{
-						//queryResult = queryResult + VarTable.first + ", ";
-
+						queryResult = queryResult + element.first + ", ";
+						//queryResult = "from varTable";
 					}
 				}
 				

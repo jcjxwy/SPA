@@ -1,4 +1,5 @@
 #include "GUIWrapper.h"
+#include "../source/PQL.h"
 
 #include <iostream>
 
@@ -21,7 +22,10 @@ void GUIWrapper::evaluate(std::string query, std::list<std::string>& results){
   // ...code to evaluate query...
 
 	std::cout << "query=  " << query << std::endl;
-	results.push_back(query + "\nQuery result: ...");
+	PQL PQLPaser = PQL(query);
+	string queryResult = PQLPaser.getResult();
+	//string queryResult = "...";
+	results.push_back(query + "\nQuery result: " + queryResult);
   // store the answers to the query in the results list (it is initially empty)
   // each result must be a string.
 }
