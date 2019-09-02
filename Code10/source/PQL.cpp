@@ -22,6 +22,12 @@ PQL::PQL(string query) {
 	smatch match2;
 	regex_search(query, match2, r2);
 	body = match2.str(0);
+
+	bool isValidSyntax = syntaxCheck(declaration, body);
+	if (!isValidSyntax) {
+		return;
+	}
+
 	parseDeclaration();
 	parseBody();
 }
@@ -36,6 +42,58 @@ string PQL::getBody() {
 
 string PQL::getResult() {
 	return queryResult;
+}
+
+bool PQL::syntaxCheck(string declaration, string body) {
+	//Check for declaration
+	if (declaration.empty()) {
+		queryResult = "Syntax Error. Missing Declaration.";
+		return false;
+	}
+
+	//Check for body
+	if (body.empty()) {
+		queryResult = "Syntax Error. Missing Body.";
+		return false;
+	}
+
+	//Check for Select-Clause only
+	regex r1("(Select [a-zA-z][a-zA-Z0-9]*)");
+	smatch match1;
+	regex_search(body, match1, r1);
+	string selectClause = match1.str(0);
+	if (selectClause.empty()) {
+		queryResult = "Syntax Error. Missing Select Clause.";
+		return false;
+	}
+
+	//Check for Such-that-Clause only
+	regex r2("(such that .*)");
+	regex r3("(such that ((Uses|Modifies) \\(([0-9]+|[a-zA-Z][a-zA-Z0-9]*), (_|\"[a-zA-Z][A-Za-z0-9]*\"|[a-zA-Z][A-Za-z0-9]*)\\)|(Uses\\*|Modifies\\*) \\((\"[a-zA-Z][A-Za-z0-9]*\"|[a-zA-Z][A-Za-z0-9]*), (_|\"[a-zA-Z][A-Za-z0-9]*\"|[a-zA-Z][A-Za-z0-9]*)\\)|((Parent|Parent\\*|Follows|Follows\\*) \\(([0-9]+|[a-zA-Z][a-zA-Z0-9]*|_), (_|[0-9]+|[a-zA-Z][a-zA-Z0-9]*\\)))))");
+	smatch match2, match3;
+	regex_search(body, match2, r2);
+	regex_search(body, match3, r3);
+	string suchThatClause = match2.str();
+	string suchThatClauseSyntax = match3.str();
+	if (!suchThatClause.empty() && suchThatClauseSyntax.empty()) {
+		queryResult = "Syntax Error. Wrong Such-That Clause Syntax.";
+		return false;
+	}
+
+	//Check for Pattern-Clause only
+	regex r4("(pattern .*)");
+	regex r5("(pattern [a-zA-Z][a-zA-Z0-9]* \\(((\\s)?_(\\s)?|\"[a-zA-Z][a-zA-Z0-9]*\"|[a-zA-Z][a-zA-Z0-9]*), ((\\s)?_(\\s)?|_\"([a-zA-Z][a-zA-Z0-9]*|[0-9]+)((\\s)?[+\\-*%/](\\s)?([a-zA-Z][a-zA-Z0-9]*|[0-9]+))*\"_|\"([a-zA-Z][a-zA-Z0-9]|[0-9]+)*((\\s)?[+\\-/*%](\\s)?([a-zA-Z][a-zA-Z0-9]*|[0-9]+))*\")\\))");
+	smatch match4, match5;
+	regex_search(body, match4, r4);
+	regex_search(body, match5, r5);
+	string patternClause = match4.str();
+	string patternClauseSyntax = match5.str();
+	if (!patternClause.empty() && patternClauseSyntax.empty()) {
+		queryResult = "Syntax Error. Wrong Pattern Clause Syntax.";
+		return false;
+	}
+
+	return true;
 }
 
 void PQL::parseDeclaration() {
