@@ -12,23 +12,15 @@ using namespace std;
 
 PQL::PQL(string query) {
 
-	//query = "read v; Select v";
-	//query = "read v; Select v such that Parent(_, _'vv'_)";
-	//query = "read v; Select v such that Parent(_, _'vv'_) Pattern(_, __)";
-	//query = "read v; Select v Pattern(_, __) such that Parent(_, _'vv'_)";
-	//query = "read v; Select v Pattern(_, __)";
+	//test case 1
 
-	//query = "read v; Select v llk";
-	//query = "read v; Select v such that Parent(_, _'vv'_) such that Parent(_, _'vv'_)";
-	//query = "read v; Select v Pattern(_, __) Pattern(_, __)";
-	//query = "read v; Select v Pattern(_, __) such that Parent(_, _'vv'_) Pattern(_, __)";
-	//query = "read v; Select v such that Parent(_, _'vv'_) Pattern(_, __) such that Parent(_, _'vv'_)";
-	//query = "read v; Select v such that Parent(_, _'vv'_) llk Parent(_, _'vv'_)";
-	//query = "read v; Select v such that Parent(_, _'vv'_)Parent(_, _'vv'_) lll";
+	// wrong expected result
+	//assign a; variable g; read v; Select v pattern a (g, _) such that Parent (v, _);
 
+	//correct expected result
+	//assign a; variable g; read v; Select v pattern a (g, _) such that Uses (v, _);
+	//assign a; variable g; read v; Select v pattern a (g, _)  such that Uses (v, _) such that Uses (a, _) ;
 
-
-	//cout << query;
 
 	//Parse and store the query into "declaration" and "body" using regular expression
 	regex r1("(((stmt|read|print|call|while|if|assign|variable|constant|procedure)\\s[a-zA-Z][a-zA-Z0-9]*;(\\s)*)*(?=Select))");
@@ -47,7 +39,10 @@ PQL::PQL(string query) {
 	}
 
 	parseDeclaration();
-	parseBody();
+	
+	//parseBody(); i think i no longer need parseBody()
+	string result = query_algorithm();
+
 }
 
 string PQL::getDeclaration() {
@@ -75,43 +70,27 @@ bool PQL::syntaxCheck(string declaration, string body) {
 		return false;
 	}
 
-	//Check for Select-Clause only
-	regex r1("(Select [a-zA-z][a-zA-Z0-9]*)");
-	smatch match1;
-	regex_search(body, match1, r1);
-	string selectClause = match1.str(0);
-	if (selectClause.empty()) {
-		queryResult = "Syntax Error. Missing Select Clause.";
+
+	string select_cl = "(Select [a-zA-z][a-zA-Z0-9]*)";
+	string relref_such_that = "(such that ((Uses|Modifies) \\(([0-9]+|[a-zA-Z][a-zA-Z0-9]*), (_|\"[a-zA-Z][A-Za-z0-9]*\"|[a-zA-Z][A-Za-z0-9]*)\\)|((Parent|Parent\\*|Follows|Follows\\*) \\(([0-9]+|[a-zA-Z][a-zA-Z0-9]*|_), (_|[0-9]+|[a-zA-Z][a-zA-Z0-9]*\\)))))";
+	string relref_pattern("(pattern [a-zA-Z][a-zA-Z0-9]* \\(((\\s)?_(\\s)?|\"[a-zA-Z][a-zA-Z0-9]*\"|[a-zA-Z][a-zA-Z0-9]*), ((\\s)?_(\\s)?|_\"([a-zA-Z][a-zA-Z0-9]*|[0-9]+)((\\s)?[+\\-*%/](\\s)?([a-zA-Z][a-zA-Z0-9]*|[0-9]+))*\"_|\"([a-zA-Z][a-zA-Z0-9]*|[0-9]+)((\\s)?[+\\-/*%](\\s)?([a-zA-Z][a-zA-Z0-9]*|[0-9]+))*\")\\))");
+	
+	body_select = check_clause("Select", select_cl);
+	body_such_that = check_clause("such that", relref_such_that);
+	body_pattern = check_clause("pattern", relref_pattern);
+
+
+	cout << body_select << " body_select ________________" << endl;
+	cout << body_such_that << " body_such_that ________________" << endl;
+	cout << body_pattern << " body_pattern ________________" << endl;
+
+	if (body_select.compare(string_false) == 0 || body_such_that.compare(string_false) == 0 || body_pattern.compare(string_false) == 0) {
 		return false;
 	}
-
-	//Check for Such-that-Clause only
-	regex r2("(such that .*)");
-	regex r3("(such that ((Uses|Modifies) \\(([0-9]+|[a-zA-Z][a-zA-Z0-9]*), (_|\"[a-zA-Z][A-Za-z0-9]*\"|[a-zA-Z][A-Za-z0-9]*)\\)|((Parent|Parent\\*|Follows|Follows\\*) \\(([0-9]+|[a-zA-Z][a-zA-Z0-9]*|_), (_|[0-9]+|[a-zA-Z][a-zA-Z0-9]*\\)))))");
-	smatch match2, match3;
-	regex_search(body, match2, r2);
-	regex_search(body, match3, r3);
-	string suchThatClause = match2.str();
-	string suchThatClauseSyntax = match3.str();
-	if (!suchThatClause.empty() && suchThatClauseSyntax.empty()) {
-		queryResult = "Syntax Error. Wrong Such-That Clause Syntax.";
-		return false;
+	else {
+		bool extra_char = check_extra_char(select_cl, relref_such_that, relref_pattern);
+		return !extra_char;
 	}
-
-	//Check for Pattern-Clause only
-	regex r4("(pattern .*)");
-	regex r5("(pattern [a-zA-Z][a-zA-Z0-9]* \\(((\\s)?_(\\s)?|\"[a-zA-Z][a-zA-Z0-9]*\"|[a-zA-Z][a-zA-Z0-9]*), ((\\s)?_(\\s)?|_\"([a-zA-Z][a-zA-Z0-9]*|[0-9]+)((\\s)?[+\\-*%/](\\s)?([a-zA-Z][a-zA-Z0-9]*|[0-9]+))*\"_|\"([a-zA-Z][a-zA-Z0-9]*|[0-9]+)((\\s)?[+\\-/*%](\\s)?([a-zA-Z][a-zA-Z0-9]*|[0-9]+))*\")\\))");
-	smatch match4, match5;
-	regex_search(body, match4, r4);
-	regex_search(body, match5, r5);
-	string patternClause = match4.str();
-	string patternClauseSyntax = match5.str();
-	if (!patternClause.empty() && patternClauseSyntax.empty()) {
-		queryResult = "Syntax Error. Wrong Pattern Clause Syntax.";
-		return false;
-	}
-
-	return true;
 }
 
 void PQL::parseDeclaration() {
@@ -137,110 +116,16 @@ void PQL::replace_body(string replacement) {
 }
 
 void PQL::parseBody() {
-	smatch match_select, match_such_that, match_pattern, findPrefix;
-	string body_copy;
-	body_copy = body;
-	//\\(\\w+,\\s\\w+\\)
-	//
-	regex search_for_select("Select\\s(stmt|read|print|call|while|if|assign|variable|constant|procedure)");
-	regex select_for_such_that("such that\\s(Follow\\*|Parent\\*|Uses|Modifies|Follow|Parent)\\s\\(\\w+,\\s\\w+\\)");
-	regex select_pattern("pattern\\sassign\\s\\(\\w+,\\s\\w+\\)");
-	string query_result = "";
-
-	regex_search(body_copy, match_select, search_for_select);
-	regex_search(body_copy, match_such_that, select_for_such_that);
-	regex_search(body_copy, match_pattern, select_pattern);
-	/*
-	You could use the suffix() function, and search again until you don't find a match:
-
-int main()
-{
-    regex exp("(\\b\\S*\\b)");
-    smatch res;
-    string str = "first second third forth";
-
-    while (regex_search(str, res, exp)) {
-        cout << res[0] << endl;
-        str = res.suffix();
-    }
-}   
-	*/
-
-
-	if (!match_select.empty()) {
-		cout << match_select.str(0) << "    <    match select"<< endl;
-	}
-	if (!match_such_that.empty()) {
-		cout << match_such_that.str(0) << "   <    match such that" << endl;
-		cout << match_such_that.str(1) << "   <    matchhhhhhhh such that" << endl;
-	}
-	if (!match_pattern.empty()) {
-		cout << match_pattern.str(0) <<"    <    match pattern" << endl;
-	}
-	cout << body_copy << "<---ori" << endl;
-
-	regex re(match_such_that.str(0));
-	cout << match_such_that.str(0) << "<hiihihihih" << endl;
-	body_copy = regex_replace(body_copy, select_for_such_that, "", regex_constants::format_first_only);
-	//read v; Select v such that Follow (cc, dd)
-	cout << body_copy << "<----copy" << endl;
-	cout << "end" << endl << endl;
-	queryResult = "test!!!!";
-
-	/*try {
-		regex_search(body, match_select, search_for_select);
-		//string tempAns = match_select.str(0);
-		string select_value = match_select.str(0);
-
-		if (!match_select.empty()) {
-			string suffix_after_select = match_select.suffix().str();
-
-			if (suffix_after_select.empty()) {
-				// case 1, Select *arugment* without *such that* and *pattern*
-				// eg - Select *arugment*
-				
-				query_result = query_algorithm(select_value);
-			}
-			else {
-				regex_search(suffix_after_select, match_such_that, select_for_such_that);
-				regex_search(suffix_after_select, match_pattern, select_pattern);
-				string prefixString = match_pattern.prefix().str();
-
-				if (prefixString.empty() && !findPrefix.empty()) {
-					//case 2, Select* arugment* with *such that* and/or *pattern*
-
-					// TBC
-					//regex selectSuchThat("such that\\s(Follow|Parent|Uses|Modifies|Follow\W|Parent\W)");
-					//regex_search(suffixR, matchSuchThat, selectSuchThat);
-					//regex selectPattern("pattern\\sassign");
-					//regex_search(suffixR, matchPattern, selectPattern);
-					
-					queryResult = "TBC";
-				}
-				else {
-					//case 2.2, Invaild syntex after Select *arugment*
-					queryResult = "INVAILD SYNTEX";
-				}
-			}
-		}
-		else {
-			queryResult = "INVAILD ARGUMENT AFTER 'Select'.";
-		}
-	}
-	catch (std::regex_error& e) {
-		// Syntax error in the regular expression
-		queryResult = "Syntax error in the regular expression.";
-	}
-	*/
 }
 
-string PQL::query_algorithm(string select_value, string such_that_value, string pattern_value)
+// answer user query
+string PQL::query_algorithm()
 {
 	string query_value = "";
-	if (such_that_value.empty() && pattern_value.empty()) {
+	if (body_such_that.empty() && body_pattern.empty()) {
 
 		string word_select, arugment;
-		istringstream iss(select_value);
+		istringstream iss(body_select);
 		iss >> word_select;
 		iss >> arugment;
 
@@ -254,17 +139,87 @@ string PQL::query_algorithm(string select_value, string such_that_value, string 
 				//queryResult = "from varTable";
 			}
 		}
+		else {
+			queryResult = "Select some variable: " + body_select;
+		}
 	}
-	else if (!such_that_value.empty() && pattern_value.empty()) {
+	else if (!body_such_that.empty() && body_pattern.empty()) {
+		queryResult = "Select some variable: " + body_select + "\n";
+		queryResult += "Such that: " + body_such_that + "\n";
 
 	}
-	else if (such_that_value.empty() && !pattern_value.empty()) {
-
+	else if (body_such_that.empty() && !body_pattern.empty()) {
+		queryResult = "Only Select some variable: " + body_select + "\n";
+		queryResult += "Pattern: " + body_pattern + "\n";
 	}
 	else {
-
+		queryResult = "Select some variable: " + body_select + "\n";
+		queryResult += "Such that: " + body_such_that + "\n";
+		queryResult += "Pattern: " + body_pattern + "\n";
 	}
 
 
 	return query_value;
+}
+
+//check if clauses fit the string relref , and no repeated clauses
+string PQL::check_clause(string clause, string relref)
+{
+	int counter = 0;
+	regex regex_clause("(" + clause + " .*)");
+	regex regex_relref(relref);
+	smatch match_clause, match_relref;
+
+	string body_copy = body;
+	string clause_result;
+	string clause_syntax_result;
+
+	//regex_search(body_copy, match_clause, regex_clause);
+	regex_search(body_copy, match_clause, regex_clause);
+	clause_result = match_clause.str();
+
+	while (regex_search(body_copy, match_relref, regex_relref)) {
+		
+		clause_syntax_result = match_relref.str();
+		body_copy = match_relref.suffix().str();
+		counter++;
+	}
+
+	if (counter > 1) {
+		queryResult = "Syntax Error. Repeated *" + clause + "* Clause.";
+		return string_false;
+	}
+	
+	if (!clause_result.empty() && clause_syntax_result.empty()) {
+		queryResult = "Syntax Error. Wrong *" + clause +  "* Clause Syntax.";
+		return string_false;
+	}
+	
+	return clause_syntax_result;
+}
+
+// check for extra charaters outside select, such that, pattern clauses.
+bool PQL::check_extra_char(string select_clause, string such_that_clause, string pattern_clause)
+{
+	
+	string body_copy = body;
+	string empty_string = "";
+	regex regex_select(select_clause);
+	body_copy = regex_replace(body_copy, regex_select, empty_string);
+	regex regex_such_that(such_that_clause);
+	body_copy = regex_replace(body_copy, regex_such_that, empty_string);
+	regex regex_pattern(pattern_clause);
+	body_copy = regex_replace(body_copy, regex_pattern, empty_string);
+
+	smatch match;
+	regex expected_str("\\s*;");
+	regex_search(body_copy, match, expected_str);
+
+
+	if (match.prefix().compare(empty_string) != 0 || match.suffix().compare(empty_string) != 0) {
+		queryResult = "Syntax Error. Unexpected string in query.";
+		return true;
+	}
+
+	return false;
 }
