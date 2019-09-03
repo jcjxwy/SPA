@@ -21,6 +21,7 @@ class PQL
 		void parseDeclaration();
 		void replace_body(string replacement);
 		void parseBody();
+		string query_algorithm(string select_value, string such_that_value = "", string pattern_value = "");
 };
 
 #endif
