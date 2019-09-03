@@ -18,6 +18,7 @@ class PQL
 		string declaration;
 		string body;
 		string queryResult;
+		bool syntaxCheck(string declaration, string body);
 		void parseDeclaration();
 		void replace_body(string replacement);
 		void parseBody();
